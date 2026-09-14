@@ -1,10 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net40;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Description>Document builder and layout helpers for generating OFD documents in Ofdrw.Net.</Description>
     <PackageTags>OFD;layout;builder;document-generation</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Ofdrw.Net.Core/Ofdrw.Net.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ofdrw.Net.Net40.SmokeTests" />
   </ItemGroup>
 </Project>

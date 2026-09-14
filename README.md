@@ -21,6 +21,7 @@ Ofdrw.Net is a preview-stage .NET SDK and CLI for OFD document packaging, readin
 See [docs/feature-parity.md](docs/feature-parity.md) for the maintained
 OFDRW comparison, completed hardening work, and remaining production gaps.
 See [conversion contracts](docs/conversion-contracts.md) for page selection, original-text diagnostics, font initialization, resource budgets, and editing behavior.
+See [.NET Framework 4.0 compatibility](docs/net40-compatibility.md) for legacy .NET 4.0 runtime support across base OFD packaging, parsing, SVG export, and signature modules.
 
 - OFD core models, document builder API, globally unique object IDs, layers, templates, text runs, vector paths, images, fonts, attachments, annotations, and custom tags.
 - Bounded OFD ZIP loading with path traversal, entry count, expanded-size, and compression-ratio checks.
@@ -49,22 +50,23 @@ All packages are published on [NuGet](https://www.nuget.org/profiles/whynpc). Th
 - For signature creation or verification, add `Ofdrw.Net.Signatures` separately. It is not included by the conversion meta-package.
 - For shell scripts and interactive use, install `Ofdrw.Net.Cli` as a global .NET tool instead of adding it to an application project.
 - `Ofdrw.Net.Core` and `Ofdrw.Net.Converter.Abstractions` are primarily building blocks. Install them directly only when using the models/contracts alone or implementing a custom converter.
+- Base OFD modules (`Core`, `Packaging`, `Reader`, `Layout`, `Converter.Abstractions`, `Converter.Svg`, `Signatures`) support `.NET Framework 4.0` (`net40`) alongside `netstandard2.0` and `netstandard2.1`.
 
 Published packages:
 
-| Package | Install when you need |
-| --- | --- |
-| [`Ofdrw.Net.Converter`](https://www.nuget.org/packages/Ofdrw.Net.Converter) | The easiest application entry point for DOCX, PDF, and SVG conversion. |
-| [`Ofdrw.Net.Converter.Docx`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Docx) | Direct DOCX/OpenXML to native OFD text, plus optional PDF and dual-layer rendering. |
-| [`Ofdrw.Net.Converter.Pdf`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Pdf) | PDF to OFD and OFD to PDF conversion. |
-| [`Ofdrw.Net.Converter.Svg`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Svg) | OFD page to self-contained SVG conversion. |
-| [`Ofdrw.Net.Signatures`](https://www.nuget.org/packages/Ofdrw.Net.Signatures) | Signature generation, protected-entry digest checks, and custom signed-value verification. |
-| [`Ofdrw.Net.Layout`](https://www.nuget.org/packages/Ofdrw.Net.Layout) | Building and editing typed OFD documents. |
-| [`Ofdrw.Net.Packaging`](https://www.nuget.org/packages/Ofdrw.Net.Packaging) | Writing OFD packages and working with the ZIP container layer. |
-| [`Ofdrw.Net.Reader`](https://www.nuget.org/packages/Ofdrw.Net.Reader) | Reading OFD packages and extracting document content. |
-| [`Ofdrw.Net.Core`](https://www.nuget.org/packages/Ofdrw.Net.Core) | Shared OFD models, constants, options, and validation types. |
-| [`Ofdrw.Net.Converter.Abstractions`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Abstractions) | Converter interfaces for custom implementations or integrations. |
-| [`Ofdrw.Net.Cli`](https://www.nuget.org/packages/Ofdrw.Net.Cli) | Command-line conversion and document utilities. |
+| Package | Frameworks | Install when you need |
+| :--- | :--- | :--- |
+| [`Ofdrw.Net.Converter`](https://www.nuget.org/packages/Ofdrw.Net.Converter) | `netstandard2.0;netstandard2.1` | The easiest application entry point for DOCX, PDF, and SVG conversion. |
+| [`Ofdrw.Net.Converter.Docx`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Docx) | `netstandard2.0;netstandard2.1` | Direct DOCX/OpenXML to native OFD text, plus optional PDF and dual-layer rendering. |
+| [`Ofdrw.Net.Converter.Pdf`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Pdf) | `netstandard2.0;netstandard2.1` | PDF to OFD and OFD to PDF conversion. |
+| [`Ofdrw.Net.Converter.Svg`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Svg) | `net40;netstandard2.0;netstandard2.1` | OFD page to self-contained SVG conversion. |
+| [`Ofdrw.Net.Signatures`](https://www.nuget.org/packages/Ofdrw.Net.Signatures) | `net40;netstandard2.0;netstandard2.1` | Signature generation, protected-entry digest checks, and custom signed-value verification. |
+| [`Ofdrw.Net.Layout`](https://www.nuget.org/packages/Ofdrw.Net.Layout) | `net40;netstandard2.0;netstandard2.1` | Building and editing typed OFD documents. |
+| [`Ofdrw.Net.Packaging`](https://www.nuget.org/packages/Ofdrw.Net.Packaging) | `net40;netstandard2.0;netstandard2.1` | Writing OFD packages and working with the ZIP container layer. |
+| [`Ofdrw.Net.Reader`](https://www.nuget.org/packages/Ofdrw.Net.Reader) | `net40;netstandard2.0;netstandard2.1` | Reading OFD packages and extracting document content. |
+| [`Ofdrw.Net.Core`](https://www.nuget.org/packages/Ofdrw.Net.Core) | `net40;netstandard2.0;netstandard2.1` | Shared OFD models, constants, options, and validation types. |
+| [`Ofdrw.Net.Converter.Abstractions`](https://www.nuget.org/packages/Ofdrw.Net.Converter.Abstractions) | `net40;netstandard2.0;netstandard2.1` | Converter interfaces for custom implementations or integrations. |
+| [`Ofdrw.Net.Cli`](https://www.nuget.org/packages/Ofdrw.Net.Cli) | `net10.0` | Command-line conversion and document utilities. |
 
 Install the high-level conversion package:
 

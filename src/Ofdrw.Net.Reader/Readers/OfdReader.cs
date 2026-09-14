@@ -404,9 +404,9 @@ public sealed class OfdReader : IOfdReader
     private static IEnumerable<OfdElement> ParsePageObjects(
         OfdPackageArchive archive,
         XDocument pageXml,
-        IReadOnlyDictionary<string, string> fontMap,
-        IReadOnlyDictionary<string, string> mediaMap,
-        IReadOnlyDictionary<string, string> mediaTypeMap,
+        IDictionary<string, string> fontMap,
+        IDictionary<string, string> mediaMap,
+        IDictionary<string, string> mediaTypeMap,
         string pageResPath)
     {
         var layers = pageXml.Root?
@@ -486,7 +486,7 @@ public sealed class OfdReader : IOfdReader
 
                     if (mediaMap.TryGetValue(resourceId, out var mediaFile))
                     {
-                        var mediaPath = mediaFile.Contains('/') ? mediaFile : Resolve(pageResPath, mediaFile);
+                        var mediaPath = mediaFile.IndexOf('/') >= 0 ? mediaFile : Resolve(pageResPath, mediaFile);
                         if (archive.TryGetBytes(mediaPath, out var bytes))
                         {
                             image.Data = bytes;
@@ -568,7 +568,7 @@ public sealed class OfdReader : IOfdReader
         }
     }
 
-    private static string ResolveFontName(string? fontRef, IReadOnlyDictionary<string, string> fontMap)
+    private static string ResolveFontName(string? fontRef, IDictionary<string, string> fontMap)
     {
         if (!string.IsNullOrWhiteSpace(fontRef) && fontMap.TryGetValue(fontRef!, out var fontName))
         {
@@ -630,20 +630,44 @@ public sealed class OfdReader : IOfdReader
         return index < 0 ? string.Empty : normalized.Substring(0, index);
     }
 
-    private static (double x, double y, double w, double h) ParseBox(string? value)
+    private readonly struct Box
+    {
+        public readonly double x;
+        public readonly double y;
+        public readonly double w;
+        public readonly double h;
+
+        public Box(double x, double y, double w, double h)
+        {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+        }
+
+        public void Deconstruct(out double x, out double y, out double w, out double h)
+        {
+            x = this.x;
+            y = this.y;
+            w = this.w;
+            h = this.h;
+        }
+    }
+
+    private static Box ParseBox(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return (0d, 0d, 0d, 0d);
+            return new Box(0d, 0d, 0d, 0d);
         }
 
         var parts = value!.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 4)
         {
-            return (0d, 0d, 0d, 0d);
+            return new Box(0d, 0d, 0d, 0d);
         }
 
-        return (
+        return new Box(
             ParseDouble(parts[0], 0d),
             ParseDouble(parts[1], 0d),
             ParseDouble(parts[2], 0d),

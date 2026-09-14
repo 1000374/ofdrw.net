@@ -12,9 +12,27 @@ namespace Ofdrw.Net.Packaging;
 /// <summary>Updates resources at their existing locations and gives new payloads content-based names.</summary>
 internal sealed class OfdResourceCatalog
 {
+    private readonly struct ResourceEntry
+    {
+        public readonly string Path;
+        public readonly XElement Element;
+
+        public ResourceEntry(string path, XElement element)
+        {
+            Path = path;
+            Element = element;
+        }
+
+        public void Deconstruct(out string path, out XElement element)
+        {
+            path = Path;
+            element = Element;
+        }
+    }
+
     private readonly IDictionary<string, byte[]> _entries;
     private readonly Dictionary<string, XDocument> _documents = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, (string Path, XElement Element)> _resources = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ResourceEntry> _resources = new(StringComparer.Ordinal);
     private readonly HashSet<string> _changed = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<byte[], string> _hashes = new();
 
@@ -38,7 +56,7 @@ internal sealed class OfdResourceCatalog
                 if (string.IsNullOrEmpty(id)) continue;
                 var key = resource.Name.LocalName + "\u001f" + id;
                 if (_resources.ContainsKey(key)) throw new InvalidDataException($"Duplicate resource ID '{id}' in OFD resources.");
-                _resources.Add(key, (pair.Key, resource));
+                _resources.Add(key, new ResourceEntry(pair.Key, resource));
             }
         }
     }
@@ -77,7 +95,7 @@ internal sealed class OfdResourceCatalog
         _changed.Add(path);
     }
 
-    private (string Path, XElement Element) GetOrCreate(string kind, string container, string id, string defaultPath, XNamespace ns)
+    private ResourceEntry GetOrCreate(string kind, string container, string id, string defaultPath, XNamespace ns)
     {
         var key = kind + "\u001f" + id;
         if (_resources.TryGetValue(key, out var existing) &&
@@ -117,7 +135,7 @@ internal sealed class OfdResourceCatalog
         }
         else element = new XElement(root.Name.Namespace + kind, new XAttribute("ID", id));
         parent.Add(element);
-        var result = (defaultPath, element);
+        var result = new ResourceEntry(defaultPath, element);
         _resources[key] = result;
         return result;
     }

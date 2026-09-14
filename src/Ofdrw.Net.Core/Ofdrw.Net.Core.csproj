@@ -1,11 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net40;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Description>Core OFD models, options, interfaces and validation report types for Ofdrw.Net.</Description>
     <PackageTags>OFD;document;fixed-layout;SDK</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+  </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Ofdrw.Net.Core.Tests" />
+    <InternalsVisibleTo Include="Ofdrw.Net.Net40.SmokeTests" />
     <InternalsVisibleTo Include="Ofdrw.Net.Packaging" />
     <InternalsVisibleTo Include="Ofdrw.Net.Reader" />
     <InternalsVisibleTo Include="Ofdrw.Net.Layout" />

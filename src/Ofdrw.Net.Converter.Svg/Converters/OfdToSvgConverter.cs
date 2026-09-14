@@ -135,7 +135,7 @@ public sealed class OfdToSvgConverter
     }
 
     private static IReadOnlyDictionary<OfdFontResource, string> AddEmbeddedFonts(
-        XElement root, XNamespace ns, IReadOnlyList<OfdFontResource> fonts)
+        XElement root, XNamespace ns, IList<OfdFontResource> fonts)
     {
         var families = new Dictionary<OfdFontResource, string>();
         var emitted = new HashSet<string>(StringComparer.Ordinal);
@@ -154,7 +154,7 @@ public sealed class OfdToSvgConverter
                 .Append(style.Italic ? "italic" : "normal").Append(";}\n");
         }
         if (css.Length > 0) root.Add(new XElement(ns + "style", new XAttribute("type", "text/css"), css.ToString()));
-        return families;
+        return families.AsReadOnlyDictionary();
     }
 
     private static void AddImage(XElement root, XNamespace ns, OfdPage page, OfdImageElement image, int index)
@@ -193,7 +193,7 @@ public sealed class OfdToSvgConverter
         XNamespace svgNs,
         OfdPage page,
         OfdTextElement text,
-        IReadOnlyList<OfdFontResource> fonts,
+        IList<OfdFontResource> fonts,
         IReadOnlyDictionary<OfdFontResource, string> families)
     {
         var resource = fonts.FirstOrDefault(font => !string.IsNullOrEmpty(text.FontResourceId) && font.Id == text.FontResourceId)

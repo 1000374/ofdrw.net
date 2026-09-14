@@ -1,10 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net40;netstandard2.0;netstandard2.1</TargetFrameworks>
     <Description>OFD package ZIP container read/write and structure checks for Ofdrw.Net.</Description>
     <PackageTags>OFD;ZIP;packaging;container</PackageTags>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net40'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../Ofdrw.Net.Core/Ofdrw.Net.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ofdrw.Net.Signatures" />
+    <InternalsVisibleTo Include="Ofdrw.Net.Packaging.Tests" />
+    <InternalsVisibleTo Include="Ofdrw.Net.Net40.SmokeTests" />
   </ItemGroup>
 </Project>

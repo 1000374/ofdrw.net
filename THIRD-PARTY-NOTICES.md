@@ -8,6 +8,9 @@ license for Ofdrw.Net itself.
 | --- | ---: | --- | --- |
 | Docnet.Core | 2.6.0 | MIT | https://github.com/GowenGit/docnet |
 | DocumentFormat.OpenXml | 3.5.1 | MIT | https://github.com/dotnet/Open-XML-SDK |
+| DotNetZip | 1.16.0 | BSD-3-Clause | https://github.com/haf/DotNetZip.Semverd |
+| Microsoft.Bcl.Async | 1.0.168 | Microsoft .NET Library License | https://www.nuget.org/packages/Microsoft.Bcl.Async |
+| Microsoft.NETFramework.ReferenceAssemblies.net40 | 1.0.3 | MIT | https://github.com/dotnet/sdk |
 | MigraDocCore.Rendering | 1.3.67 | MIT | https://github.com/ststeiger/PdfSharpCore |
 | PdfSharpCore | 1.3.67 | MIT | https://github.com/ststeiger/PdfSharpCore |
 | PdfPig | 0.1.15 | Apache-2.0 | https://github.com/UglyToad/PdfPig |

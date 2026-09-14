@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net40</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <FindDependenciesOfExternallyResolvedReferences>false</FindDependenciesOfExternallyResolvedReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl" Version="1.1.8" />
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Ofdrw.Net.Core/Ofdrw.Net.Core.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Packaging/Ofdrw.Net.Packaging.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Reader/Ofdrw.Net.Reader.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Layout/Ofdrw.Net.Layout.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Converter.Abstractions/Ofdrw.Net.Converter.Abstractions.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Converter.Svg/Ofdrw.Net.Converter.Svg.csproj" />
+    <ProjectReference Include="../../src/Ofdrw.Net.Signatures/Ofdrw.Net.Signatures.csproj" />
+  </ItemGroup>
+</Project>

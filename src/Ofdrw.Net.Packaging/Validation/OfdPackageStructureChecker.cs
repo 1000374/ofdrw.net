@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using Ofdrw.Net.Core.Constants;
+using Ofdrw.Net.Core.Compatibility;
 using Ofdrw.Net.Packaging.Archive;
 
 namespace Ofdrw.Net.Packaging.Validation;
@@ -26,7 +27,7 @@ public static class OfdPackageStructureChecker
                 Message = "OFD.xml is required.",
                 IsError = true
             });
-            return issues;
+            return issues.AsReadOnlyList();
         }
 
         XDocument ofdXml;
@@ -42,24 +43,26 @@ public static class OfdPackageStructureChecker
                 Message = $"OFD.xml is not valid XML: {ex.Message}",
                 IsError = true
             });
-            return issues;
+            return issues.AsReadOnlyList();
         }
 
-        var docRoots = ofdXml.Descendants()
-            .Where(x => x.Name.LocalName == "DocRoot")
-            .Select(x => Normalize(x.Value))
+        var ofdNs = ofdXml.Root?.Name.Namespace ?? XNamespace.Get(OfdConstants.Namespace);
+        var docRoots = ofdXml.Root?
+            .Elements(ofdNs + "DocBody")
+            .Elements(ofdNs + "DocRoot")
+            .Select(x => x.Value)
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .ToList();
+            .ToList() ?? new List<string>();
 
         if (docRoots.Count == 0)
         {
             issues.Add(new OfdPackageStructureIssue
             {
                 Code = "missing_doc_root",
-                Message = "OFD.xml must contain at least one DocBody/DocRoot entry.",
+                Message = "OFD.xml must declare at least one DocRoot.",
                 IsError = true
             });
-            return issues;
+            return issues.AsReadOnlyList();
         }
 
         foreach (var docRoot in docRoots)
@@ -78,7 +81,7 @@ public static class OfdPackageStructureChecker
             ValidateDocument(archive, docRoot, issues);
         }
 
-        return issues;
+        return issues.AsReadOnlyList();
     }
 
     private static void ValidateDocument(

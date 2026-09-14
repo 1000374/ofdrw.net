@@ -146,7 +146,7 @@ internal static class OfdPackagePruner
 
     private static void RemoveInvalidatedSignatures(
         XDocument originalRoot,
-        IReadOnlyDictionary<string, byte[]> original,
+        IDictionary<string, byte[]> original,
         IDictionary<string, byte[]> entries,
         OfdPackageWriteResult result)
     {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
+using Ofdrw.Net.Core.Compatibility;
+
 namespace Ofdrw.Net.Core.Models;
 
 internal static class OfdTextGeometry
@@ -12,12 +14,12 @@ internal static class OfdTextGeometry
         var result = new List<string>();
         var enumerator = StringInfo.GetTextElementEnumerator(text);
         while (enumerator.MoveNext()) result.Add(enumerator.GetTextElement());
-        return result;
+        return result.AsReadOnlyList();
     }
 
     internal static IReadOnlyList<double> ExpandDeltas(string? value, int maximumCount)
     {
-        if (string.IsNullOrWhiteSpace(value) || maximumCount <= 0) return Array.Empty<double>();
+        if (string.IsNullOrWhiteSpace(value) || maximumCount <= 0) return ArrayEmpty<double>.ReadOnlyList;
         var tokens = value!.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         var result = new List<double>();
         for (var index = 0; index < tokens.Length && result.Count < maximumCount;)
@@ -36,6 +38,6 @@ internal static class OfdTextGeometry
             count = Math.Min(count, maximumCount - result.Count);
             for (var repeat = 0; repeat < count; repeat++) result.Add(delta);
         }
-        return result;
+        return result.AsReadOnlyList();
     }
 }

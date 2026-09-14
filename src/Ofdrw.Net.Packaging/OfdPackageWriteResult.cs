@@ -8,7 +8,7 @@ public sealed class OfdPackageWriteResult
     internal readonly List<string> Removed = new();
     internal readonly List<string> Warnings = new();
 
-    public IReadOnlyList<string> RemovedEntries => Removed;
-    public IReadOnlyList<string> Diagnostics => Warnings;
+    public IReadOnlyList<string> RemovedEntries => Removed.AsReadOnlyList();
+    public IReadOnlyList<string> Diagnostics => Warnings.AsReadOnlyList();
     public bool SignaturesInvalidated { get; internal set; }
 }

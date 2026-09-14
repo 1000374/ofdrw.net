@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -173,7 +172,7 @@ public sealed class OfdSignatureService
     }
 
     private static XDocument BuildSignatureXml(
-        IReadOnlyDictionary<string, byte[]> entries,
+        IDictionary<string, byte[]> entries,
         string signaturesPath,
         string signaturePath,
         string signedValuePath,
@@ -238,7 +237,7 @@ public sealed class OfdSignatureService
     }
 
     private static void EnsureListCanBeUpdated(
-        IReadOnlyDictionary<string, byte[]> entries,
+        IDictionary<string, byte[]> entries,
         XDocument signatures,
         string signaturesPath)
     {
@@ -279,7 +278,7 @@ public sealed class OfdSignatureService
         }
     }
 
-    private static int NextNumericId(IReadOnlyCollection<XElement> records)
+    private static int NextNumericId(IEnumerable<XElement> records)
     {
         var max = 0;
         foreach (var value in records.Select(record => record.Attribute("ID")?.Value))
@@ -309,31 +308,15 @@ public sealed class OfdSignatureService
     }
 
     private static async Task WritePackageAsync(
-        IReadOnlyDictionary<string, byte[]> entries,
+        IDictionary<string, byte[]> entries,
         Stream output,
         CancellationToken cancellationToken)
     {
-        using var archive = new ZipArchive(
+        await ZipPackageIO.WriteZipAsync(
             output,
-            ZipArchiveMode.Create,
-            leaveOpen: true);
-        foreach (var entry in entries.OrderBy(
-            pair => pair.Key,
-            StringComparer.Ordinal))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var zipEntry = archive.CreateEntry(
-                entry.Key,
-                CompressionLevel.Optimal);
-            using var stream = zipEntry.Open();
-            await stream
-                .WriteAsync(
-                    entry.Value,
-                    0,
-                    entry.Value.Length,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
+            entries,
+            enableCompression: true,
+            cancellationToken).ConfigureAwait(false);
     }
 
     private static XDocument ParseXml(byte[] bytes, string path)

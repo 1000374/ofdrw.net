@@ -14,7 +14,7 @@ public sealed class OfdPackageArchive
         _entries = entries ?? throw new ArgumentNullException(nameof(entries));
     }
 
-    public IReadOnlyCollection<string> EntryNames => _entries.Keys;
+    public IReadOnlyCollection<string> EntryNames => _entries.Keys.AsReadOnlyCollection();
 
     public bool Contains(string entryName)
     {

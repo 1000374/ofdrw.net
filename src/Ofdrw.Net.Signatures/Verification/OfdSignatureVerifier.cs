@@ -18,7 +18,7 @@ public sealed class OfdSignatureVerifier
         IEnumerable<IOfdSignedValueVerifier>? signedValueVerifiers = null)
     {
         _signedValueVerifiers = (signedValueVerifiers ??
-                Array.Empty<IOfdSignedValueVerifier>())
+                new IOfdSignedValueVerifier[0])
             .ToDictionary(
                 verifier => verifier.SignatureMethod,
                 StringComparer.OrdinalIgnoreCase);

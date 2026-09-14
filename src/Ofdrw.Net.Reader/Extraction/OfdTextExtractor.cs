@@ -22,7 +22,8 @@ public sealed class OfdTextExtractor
         return package.Pages
             .OrderBy(page => page.Index)
             .Select(page => ExtractPage(page, includeTemplates))
-            .ToList();
+            .ToList()
+            .AsReadOnlyList();
     }
 
     public string Extract(

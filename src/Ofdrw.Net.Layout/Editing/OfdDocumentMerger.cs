@@ -113,7 +113,7 @@ public static class OfdDocumentMerger
             }
         }
 
-        return new OfdDocumentMergeResult(destination, diagnostics.AsReadOnly());
+        return new OfdDocumentMergeResult(destination, diagnostics.AsReadOnlyList());
     }
 
     private static IEnumerable<OfdElement> EnumerateElements(OfdPage page, bool includeTemplates)

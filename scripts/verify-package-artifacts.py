@@ -15,6 +15,11 @@ PACKAGES = (
     'Ofdrw.Net.Converter.Svg', 'Ofdrw.Net.Signatures', 'Ofdrw.Net.Converter', 'Ofdrw.Net.Cli',
 )
 
+NET40_BASE_PACKAGES = {
+    'Ofdrw.Net.Core', 'Ofdrw.Net.Packaging', 'Ofdrw.Net.Layout', 'Ofdrw.Net.Reader',
+    'Ofdrw.Net.Converter.Abstractions', 'Ofdrw.Net.Converter.Svg', 'Ofdrw.Net.Signatures',
+}
+
 
 def inspect(directory: Path, version: str):
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?', version):
@@ -44,8 +49,9 @@ def inspect(directory: Path, version: str):
                         raise ValueError(f'Mismatched SDK dependency in {path.name}: {dependency.attrib}')
             required = (['tools/net10.0/any/Ofdrw.Net.Cli.dll'] if name == 'Ofdrw.Net.Cli'
                         else [] if name == 'Ofdrw.Net.Converter'
+                        else [f'lib/{framework}/{name}.dll' for framework in ('net40', 'netstandard2.0', 'netstandard2.1')] if name in NET40_BASE_PACKAGES
                         else [f'lib/{framework}/{name}.dll' for framework in ('netstandard2.0', 'netstandard2.1')])
-            required += ['README.md', 'THIRD-PARTY-NOTICES.md', 'docs/feature-parity.md', 'docs/conversion-contracts.md']
+            required += ['README.md', 'THIRD-PARTY-NOTICES.md', 'docs/feature-parity.md', 'docs/conversion-contracts.md', 'docs/net40-compatibility.md']
             for entry in required:
                 if entry not in package.namelist():
                     raise ValueError(f'Missing {entry} in {path.name}')

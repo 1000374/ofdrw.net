@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Ofdrw.Net.Core.Compatibility;
 
 namespace Ofdrw.Net.Core.Models;
 
@@ -18,7 +19,7 @@ internal static class OfdClipGeometry
     internal static IReadOnlyList<OfdClipRegion> Read(string? xml)
     {
         var regions = new List<OfdClipRegion>();
-        if (string.IsNullOrWhiteSpace(xml)) return regions;
+        if (string.IsNullOrWhiteSpace(xml)) return regions.AsReadOnlyList();
         var root = XElement.Parse(xml!);
         foreach (var clip in root.Elements().Where(node => node.Name.LocalName == "Clip"))
         {
@@ -46,7 +47,7 @@ internal static class OfdClipGeometry
             }
             regions.Add(region);
         }
-        return regions;
+        return regions.AsReadOnlyList();
     }
 
     private static double[] Matrix(string? value)
@@ -59,7 +60,7 @@ internal static class OfdClipGeometry
 
     private static double[] Numbers(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return Array.Empty<double>();
+        if (string.IsNullOrWhiteSpace(value)) return ArrayEmpty<double>.Value;
         return value!.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(token =>
         {
             if (!double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ||

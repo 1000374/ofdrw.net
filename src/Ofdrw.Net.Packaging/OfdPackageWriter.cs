@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -11,6 +10,7 @@ using System.Xml.Linq;
 using Ofdrw.Net.Core.Constants;
 using Ofdrw.Net.Core.Models;
 using Ofdrw.Net.Core.IO;
+using Ofdrw.Net.Packaging.Archive;
 
 namespace Ofdrw.Net.Packaging;
 
@@ -38,14 +38,11 @@ public sealed class OfdPackageWriter
         cancellationToken.ThrowIfCancellationRequested();
         var entries = BuildEntries(package);
         var result = OfdPackagePruner.Prune(package, entries);
-        using var zip = new ZipArchive(destination, ZipArchiveMode.Create, leaveOpen: true);
-
-        foreach (var entry in entries.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
-        {
-            var zipEntry = zip.CreateEntry(entry.Key, package.Options.EnableDeflateCompression ? CompressionLevel.Optimal : CompressionLevel.NoCompression);
-            using var stream = zipEntry.Open();
-            await stream.WriteAsync(entry.Value, 0, entry.Value.Length, cancellationToken).ConfigureAwait(false);
-        }
+        await ZipPackageIO.WriteZipAsync(
+            destination,
+            entries,
+            package.Options.EnableDeflateCompression,
+            cancellationToken).ConfigureAwait(false);
         return result;
     }
 
@@ -150,7 +147,7 @@ public sealed class OfdPackageWriter
         return entries;
     }
 
-    private static Dictionary<OfdPage, string> BuildPagePaths(IReadOnlyList<OfdPage> pages, string documentDirectory)
+    private static Dictionary<OfdPage, string> BuildPagePaths(IList<OfdPage> pages, string documentDirectory)
     {
         var result = new Dictionary<OfdPage, string>();
         var used = new HashSet<string>(pages.Where(page => !string.IsNullOrWhiteSpace(page.SourceEntryPath))
@@ -240,7 +237,7 @@ public sealed class OfdPackageWriter
     }
 
     private static Dictionary<OfdPage, Dictionary<string, string>> BuildPageObjectIds(
-        IReadOnlyList<OfdPage> pages,
+        IList<OfdPage> pages,
         IDictionary<OfdElement, string> elementIds,
         OfdIdAllocator idAllocator)
     {
@@ -265,7 +262,7 @@ public sealed class OfdPackageWriter
     }
 
     private static Dictionary<OfdImageElement, ImageResource> BuildImageResources(
-        IReadOnlyList<OfdPage> pages,
+        IList<OfdPage> pages,
         OfdIdAllocator idAllocator)
     {
         var resources = new Dictionary<OfdImageElement, ImageResource>();
@@ -297,12 +294,12 @@ public sealed class OfdPackageWriter
         List<OfdPage> pages,
         IDictionary<string, byte[]> entries,
         XNamespace ns,
-        IReadOnlyDictionary<OfdPage, string> pagePaths,
-        IReadOnlyDictionary<OfdPage, string> pageIds,
-        IReadOnlyDictionary<OfdPage, Dictionary<string, string>> layerIds,
-        IReadOnlyDictionary<OfdElement, string> elementIds,
-        IReadOnlyDictionary<OfdTextElement, string> fontIds,
-        IReadOnlyDictionary<OfdImageElement, ImageResource> imageResources,
+        IDictionary<OfdPage, string> pagePaths,
+        IDictionary<OfdPage, string> pageIds,
+        IDictionary<OfdPage, Dictionary<string, string>> layerIds,
+        IDictionary<OfdElement, string> elementIds,
+        IDictionary<OfdTextElement, string> fontIds,
+        IDictionary<OfdImageElement, ImageResource> imageResources,
         OfdIdAllocator idAllocator)
     {
         for (var i = 0; i < pages.Count; i++)
@@ -746,15 +743,13 @@ public sealed class OfdPackageWriter
     private static byte[] ToUtf8Bytes(XDocument xml)
     {
         using var ms = new MemoryStream();
-        using (var writer = new StreamWriter(ms, new UTF8Encoding(false), 1024, leaveOpen: true))
-        {
-            xml.Save(writer);
-        }
-
+        var writer = new StreamWriter(ms, new UTF8Encoding(false));
+        xml.Save(writer);
+        writer.Flush();
         return ms.ToArray();
     }
 
-    private static long GetPreservedMaxId(IReadOnlyDictionary<string, byte[]> entries)
+    private static long GetPreservedMaxId(IDictionary<string, byte[]> entries)
     {
         var maxId = 0L;
         foreach (var entry in entries)

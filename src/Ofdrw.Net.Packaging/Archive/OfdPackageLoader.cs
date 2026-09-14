@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+#if !NET40
 using System.IO.Compression;
+#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +52,60 @@ public sealed class OfdPackageLoader
 
         var result = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
+#if NET40
+        using var zip = Ionic.Zip.ZipFile.Read(source);
+        if (zip.Entries.Count > options.MaxEntryCount)
+        {
+            throw new InvalidDataException(
+                $"OFD package contains {zip.Entries.Count} entries, exceeding the configured limit of {options.MaxEntryCount}.");
+        }
+
+        long totalUncompressedBytes = 0;
+        foreach (var entry in zip.Entries)
+        {
+            if (entry.IsDirectory || string.IsNullOrWhiteSpace(entry.FileName))
+            {
+                continue;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            var normalizedName = NormalizeAndValidate(entry.FileName);
+            if (result.ContainsKey(normalizedName))
+            {
+                throw new InvalidDataException($"OFD package contains a duplicate entry: {normalizedName}");
+            }
+
+            if (entry.UncompressedSize > options.MaxEntryUncompressedBytes)
+            {
+                throw new InvalidDataException(
+                    $"OFD package entry '{normalizedName}' exceeds the configured uncompressed size limit.");
+            }
+
+            totalUncompressedBytes = checked(totalUncompressedBytes + entry.UncompressedSize);
+            if (totalUncompressedBytes > options.MaxTotalUncompressedBytes)
+            {
+                throw new InvalidDataException("OFD package exceeds the configured total uncompressed size limit.");
+            }
+
+            if (entry.CompressedSize > 0 &&
+                entry.UncompressedSize / (double)entry.CompressedSize > options.MaxCompressionRatio)
+            {
+                throw new InvalidDataException(
+                    $"OFD package entry '{normalizedName}' exceeds the configured compression ratio limit.");
+            }
+
+            using var entryStream = entry.OpenReader();
+            using var ms = new MemoryStream();
+            var copied = await BoundedStreamCopy.CopyAsync(
+                entryStream, ms, Math.Max(1, entry.UncompressedSize), $"OFD entry '{normalizedName}'", cancellationToken)
+                .ConfigureAwait(false);
+            if (copied != entry.UncompressedSize)
+            {
+                throw new InvalidDataException($"OFD entry '{normalizedName}' has an inconsistent expanded length.");
+            }
+            result[normalizedName] = ms.ToArray();
+        }
+#else
         using var zip = new ZipArchive(source, ZipArchiveMode.Read, leaveOpen: true);
         if (zip.Entries.Count > options.MaxEntryCount)
         {
@@ -102,6 +158,7 @@ public sealed class OfdPackageLoader
             }
             result[normalizedName] = ms.ToArray();
         }
+#endif
 
         return new OfdPackageArchive(result);
     }

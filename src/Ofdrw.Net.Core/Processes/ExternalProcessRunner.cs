@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Ofdrw.Net.Core.Compatibility;
 
 namespace Ofdrw.Net.Core.Processes;
 
@@ -51,7 +52,7 @@ internal static class ExternalProcessRunner
 
         var output = CaptureAsync(process.StandardOutput);
         var error = CaptureAsync(process.StandardError);
-        var pipes = Task.WhenAll(output, error);
+        var pipes = TaskCompat.WhenAll(output, error);
         var elapsed = Stopwatch.StartNew();
         var stableSince = Stopwatch.StartNew();
         long previousLength = -1;
@@ -86,7 +87,7 @@ internal static class ExternalProcessRunner
                     }
                 }
 
-                await Task.Delay(25, cancellationToken).ConfigureAwait(false);
+                await TaskCompat.Delay(25, cancellationToken).ConfigureAwait(false);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -102,7 +103,7 @@ internal static class ExternalProcessRunner
             process.WaitForExit(5000);
             try
             {
-                if (await Task.WhenAny(pipes, Task.Delay(1000)).ConfigureAwait(false) == pipes)
+                if (await TaskCompat.WhenAny(pipes, TaskCompat.Delay(1000)).ConfigureAwait(false) == pipes)
                 {
                     await pipes.ConfigureAwait(false);
                 }
@@ -151,7 +152,7 @@ internal static class ExternalProcessRunner
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (IsWindows())
             {
                 using var killer = Process.Start(new ProcessStartInfo
                 {
@@ -202,5 +203,15 @@ internal static class ExternalProcessRunner
                 catch (ArgumentException) { }
             }
         }
+    }
+
+    private static bool IsWindows()
+    {
+#if NET40
+        var platform = Environment.OSVersion.Platform;
+        return platform == PlatformID.Win32NT || platform == PlatformID.Win32Windows;
+#else
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+#endif
     }
 }

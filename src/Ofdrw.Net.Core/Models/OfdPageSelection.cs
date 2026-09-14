@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Ofdrw.Net.Core.Compatibility;
+
 namespace Ofdrw.Net.Core.Models;
 
 internal static class OfdPageSelection
@@ -11,9 +13,9 @@ internal static class OfdPageSelection
     // and use all pages for an omitted, empty, or entirely invalid selection.
     internal static IReadOnlyList<int> Normalize(int totalPages, IReadOnlyList<int>? requestedPages)
     {
-        if (totalPages <= 0) return [];
+        if (totalPages <= 0) return ArrayEmpty<int>.ReadOnlyList;
         var valid = requestedPages?.Where(index => index >= 0 && index < totalPages).ToList();
-        return valid is { Count: > 0 } ? valid : Enumerable.Range(0, totalPages).ToList();
+        return (valid is { Count: > 0 } ? valid : Enumerable.Range(0, totalPages).ToList()).AsReadOnlyList();
     }
 
     internal static IReadOnlyList<int> Apply(OfdDocumentPackage package, IReadOnlyList<int>? requestedPages, int maximumPages = int.MaxValue)

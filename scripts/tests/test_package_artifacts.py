@@ -18,12 +18,13 @@ class PackageArtifactsTests(unittest.TestCase):
             path = self.root / f'{name}.{self.version}.nupkg'
             with zipfile.ZipFile(path, 'w') as archive:
                 archive.writestr(name + '.nuspec', f'<package><metadata><id>{name}</id><version>{self.version}</version></metadata></package>')
-                for file in ('README.md', 'THIRD-PARTY-NOTICES.md', 'docs/feature-parity.md', 'docs/conversion-contracts.md'):
+                for file in ('README.md', 'THIRD-PARTY-NOTICES.md', 'docs/feature-parity.md', 'docs/conversion-contracts.md', 'docs/net40-compatibility.md'):
                     archive.writestr(file, 'fixture')
                 if name == 'Ofdrw.Net.Cli':
                     archive.writestr('tools/net10.0/any/Ofdrw.Net.Cli.dll', b'fixture')
                 elif name != 'Ofdrw.Net.Converter':
-                    for framework in ('netstandard2.0', 'netstandard2.1'):
+                    frameworks = ('net40', 'netstandard2.0', 'netstandard2.1') if name in packages.NET40_BASE_PACKAGES else ('netstandard2.0', 'netstandard2.1')
+                    for framework in frameworks:
                         archive.writestr(f'lib/{framework}/{name}.dll', b'fixture')
 
     def tearDown(self):
